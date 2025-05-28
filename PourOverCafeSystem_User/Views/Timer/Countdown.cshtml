@@ -1,0 +1,317 @@
+﻿@model PourOverCafeSystem_User.ViewModels.CountdownViewModel
+@{
+    ViewData["Title"] = "Reservation Status";
+    ViewData["NoChrome"] = true;
+}
+
+<style>
+    :root {
+        --accent: #c2b280;
+        --dark: #000;
+        --success: #2ecc71;
+        --error: #c0392b;
+        --muted: #999;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: url('/images/Select Table Page/POC BG.PNG') no-repeat center center fixed;
+        background-size: cover;
+        margin: 0;
+        padding: 0;
+        color: #111;
+    }
+
+    .status-container {
+        max-width: 600px;
+        margin: 60px auto;
+        background-color: rgba(255, 255, 255, 0.96);
+        padding: 40px 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        text-align: center;
+    }
+
+    .status-msg {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--dark);
+    }
+
+    .loader {
+        width: 48px;
+        height: 48px;
+        border: 6px solid #ccc;
+        border-top: 6px solid var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @@keyframes spin {
+        to
+
+    {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    .check-icon,
+    .cross-icon {
+        display: none;
+        font-size: 3.5rem;
+        margin-bottom: 16px;
+    }
+
+    .check-icon {
+        color: var(--success);
+    }
+
+    .cross-icon {
+        color: var(--error);
+    }
+
+    .timer-display {
+        display: none;
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--dark);
+        margin-bottom: 20px;
+    }
+
+    .expired-msg, .remarks-msg {
+        display: none;
+        font-size: 1rem;
+        font-weight: 500;
+        margin-top: 20px;
+        color: var(--error);
+    }
+
+    .modal {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        position: fixed;
+        z-index: 1050;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        justify-content: center;
+        align-items: center;
+    }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+            pointer-events: all;
+        }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .btn-dark {
+        background-color: var(--dark);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-block;
+        transition: background 0.3s ease;
+    }
+
+        .btn-dark:hover {
+            background-color: #222;
+        }
+
+    .check-icon, .cross-icon {
+        display: none;
+        font-size: 3.5rem;
+        margin-bottom: 16px;
+        animation: popIn 0.5s ease forwards;
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    @@keyframes popIn {
+        to
+
+    {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+
+    .timer-display {
+        display: none;
+        font-size: 2rem;
+        font-weight: bold;
+        animation: pulse 1.2s infinite ease-in-out;
+        color: #111;
+        margin-bottom: 20px;
+    }
+
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+    }
+</style>
+
+<div class="status-container">
+    <div id="waiting" class="status-msg">Your table is reserved. Stand by for approval. This won't take long. Do not exit or reload the page.</div>
+    <div id="loader" class="loader"></div>
+    <div id="check" class="check-icon"><i class="fas fa-circle-check"></i></div>
+    <div id="cross" class="cross-icon"><i class="fas fa-circle-xmark"></i></div>
+
+    <p class="disapproval-msg" id="disapproveHeader" style="display: none;">
+        Sorry, we have carefully looked through our system and found out that:
+    </p>
+
+    <div id="remarks" class="remarks-msg" style="display:none;"></div>
+
+    <p class="disapproval-msg" id="disapproveFooter" style="display: none;">
+        Feel free to contact us for any more concerns.
+    </p>
+
+    <a href="/" id="disapproveReturnBtn" class="btn btn-dark mt-3" style="display: none;">Return to Home</a>
+
+    <div id="timer" class="timer-display"></div>
+    <p class="approval-msg" id="visitMessage" style="display: none;">
+        Your table is ready. Please visit Pour Over Coffee - Angeles Branch within 10 minutes. Travel safely!
+    </p>
+
+    <p id="expired" class="expired-msg" style="display: none;">
+        Time's up. Please still visit Pour Over Coffee - Angeles Branch to check if your table is still available.
+    </p>
+
+    <a href="/" id="expiredReturnBtn" class="btn btn-dark mt-3" style="display: none;">
+        Return to Home
+    </a>
+
+</div>
+
+<!-- Reservation Complete Popup -->
+<div id="enjoyPopup" class="modal">
+    <div class="modal-content text-center">
+        <h4 class="mb-3">Reservation Complete</h4>
+        <p class="lead">Thank you for choosing us. Enjoy your stay at Pour Over Coffee</p>
+        <a href="/" class="btn btn-dark mt-3">Return to Home</a>
+    </div>
+</div>
+
+<!-- Reservation Cancelled Popup -->
+<div id="cancelledPopup" class="modal">
+    <div class="modal-content text-center">
+        <h4 class="mb-3 text-danger">Reservation Cancelled</h4>
+        <p class="lead">Sorry, your reservation was cancelled. Please visit or contact us if you have any concerns.</p>
+        <a href="/" class="btn btn-dark mt-3">Return to Home</a>
+    </div>
+</div>
+
+<script>
+    let timerStarted = false;
+    let countdownInterval;
+
+    function startTimer(endTime) {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("check").style.display = "block";
+        document.getElementById("timer").style.display = "block";
+
+        function updateTimer() {
+            const now = new Date();
+            const distance = endTime - now;
+
+                if (distance <= 0) {
+                    clearInterval(countdownInterval);
+                    hasEnded = true;
+
+                    document.getElementById("timer").style.display = "none";
+                    document.getElementById("visitMessage").style.display = "none";
+                    document.getElementById("check").style.display = "none";
+                    document.getElementById("cross").style.display = "block";
+                    document.getElementById("expired").style.display = "block";
+                    document.getElementById("expiredReturnBtn").style.display = "inline-block";
+
+                    fetch(`/Timer/Expire?reservationId=${@Model.ReservationId}`);
+                    return;
+                }
+
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            document.getElementById("timer").textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        updateTimer();
+        countdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    function checkStatus() {
+        fetch(`/Timer/Status?reservationId=${@Model.ReservationId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.isDisapproved) {
+                    document.getElementById("waiting").style.display = "none";
+                    document.getElementById("loader").style.display = "none";
+                    document.getElementById("cross").style.display = "block";
+                    document.getElementById("disapproveHeader").style.display = "block";
+                    document.getElementById("remarks").textContent = data.remarks;
+                    document.getElementById("remarks").style.display = "block";
+                    document.getElementById("disapproveFooter").style.display = "block";
+                    document.getElementById("disapproveReturnBtn").style.display = "inline-block";
+                    clearInterval(countdownInterval);
+                } else if (data.cancelled) {
+                    document.getElementById("cancelledPopup").classList.add("show");
+                    clearInterval(countdownInterval);
+                } else if (data.arrived) {
+                    document.getElementById("visitMessage").style.display = "block";
+                    document.getElementById("enjoyPopup").classList.add("show");
+                    clearInterval(countdownInterval);
+                } else if (data.expired) {
+                    document.getElementById("waiting").style.display = "none";
+                    document.getElementById("loader").style.display = "none";
+                    document.getElementById("check").style.display = "none";
+                    document.getElementById("remarks").style.display = "none";
+                    document.getElementById("disapproveHeader").style.display = "none";
+                    document.getElementById("disapproveFooter").style.display = "none";
+                    document.getElementById("visitMessage").style.display = "none";
+                    document.getElementById("cross").style.display = "block";
+                    document.getElementById("expired").style.display = "block";
+                    document.getElementById("expiredReturnBtn").style.display = "inline-block";
+                    document.getElementById("timer").style.display = "none";
+                    clearInterval(countdownInterval);
+                } else if (data.approved && !timerStarted && data.endTime) {
+                    document.getElementById("waiting").style.display = "none";
+                    timerStarted = true;
+                    const endTime = new Date(data.endTime);
+                    startTimer(endTime);
+                    document.getElementById("visitMessage").style.display = "block";
+                }
+            });
+    }
+    // Poll backend
+    setInterval(checkStatus, 3000);
+</script>

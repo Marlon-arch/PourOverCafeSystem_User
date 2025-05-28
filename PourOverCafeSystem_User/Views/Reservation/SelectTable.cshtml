@@ -1,0 +1,292 @@
+﻿@model List<PourOverCafeSystem_User.Database.CafeTable>
+@{
+    ViewData["Title"] = "Select Table";
+    var guestCount = ViewBag.NumberOfGuests as int?;
+    Layout = null;
+}
+
+@if (ViewBag.CafeClosed == true)
+{
+    <div id="closedOverlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.85);
+        color: white;
+        display: @(ViewBag.CafeClosed == true ? "flex" : "none");
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        text-align: center;
+        padding: 40px;
+        ">
+        <h1 style="font-size: 2rem; font-weight: bold;">Pour Over Coffee is currently closed</h1>
+        <p style="font-size: 1.2rem;">Monitoring & reservations are temporarily unavailable. Please check back later.</p>
+    </div>
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        background: url('/images/Select Table Page/POC BG.PNG') no-repeat center center fixed;
+        background-size: cover;
+        color: #111;
+    }
+
+    .table-section {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 60px 30px;
+        border-radius: 16px;
+        max-width: 1100px;
+        margin: 60px auto;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .text-muted {
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+
+    .floorplan {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .table-card {
+        width: 180px;
+        padding: 20px;
+        border-radius: 14px;
+        border: 2px solid black;
+        text-align: center;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        background-color: #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+
+        .table-card h3 {
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .table-card p {
+            margin: 4px 0;
+            color: #444;
+            font-size: 0.95rem;
+        }
+
+    .available {
+        background-color: #fff;
+    }
+
+    .unavailable {
+        background-color: #f3dcdc;
+        border-color: #a84444;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .disabled {
+        background-color: #eee;
+        color: #999;
+        border-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .table-card:hover:not(.disabled):not(.unavailable) {
+        background-color: #c2b280;
+        color: white;
+        transform: scale(1.05);
+    }
+
+        .table-card:hover:not(.disabled):not(.unavailable) h3,
+        .table-card:hover:not(.disabled):not(.unavailable) p {
+            color: white;
+        }
+
+    .table-outlet {
+        color: #007700;
+        font-weight: bold;
+    }
+
+    .btn-back {
+        margin: 40px auto 0;
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: black;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+
+        .btn-back:hover {
+            background-color: #333;
+        }
+
+    @@media (max-width: 768px) {
+        .table-card
+
+    {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .floorplan {
+        max-height: 260px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    }
+</style>
+
+<div class="table-section">
+    <h1>Select a Table</h1>
+    <p class="text-muted">Available tables for @guestCount guest@(guestCount > 1 ? "s" : "")</p>
+
+    <a href="~/images/Select Table Page/PourOverFloorPlan.png" data-lightbox="floorplan" data-title="Cafe Floor Plan">
+        <img src="~/images/Select Table Page/PourOverFloorPlan.png" alt="Cafe Floor Plan" class="floorplan" />
+    </a>
+
+    <div class="table-grid">
+        @foreach (var table in Model)
+        {
+            bool isValid = guestCount switch
+            {
+                1 => table.Capacity == 1 || table.Capacity == 2,
+                2 => table.Capacity == 2 || table.Capacity == 4,
+                3 => table.Capacity == 4,
+                4 => table.Capacity == 4 || table.Capacity == 6,
+                5 or 6 => table.Capacity == 6,
+                _ => false
+            };
+
+            string statusClass = table.Status == "Available" ? "available" : "unavailable";
+            string clickAction = (isValid && table.Status == "Available")
+            ? $"location.href='/Reservation/ReservationForm?tableId={table.TableId}&guestCount={guestCount}'"
+            : "";
+
+            string finalClass = isValid
+            ? $"table-card {statusClass}"
+            : "table-card disabled";
+
+            <div class="@finalClass"
+                 onclick="@clickAction"
+                 data-id="@table.TableId"
+                 data-guestcount="@guestCount">
+                <h3>@table.TableName</h3>
+                <p>Seats: @table.Capacity</p>
+                @if (table.HasPowerOutlet == true)
+                {
+                    <p class="table-outlet">⚡ Power Outlet</p>
+                }
+                else
+                {
+                    <p class="text-muted">No Outlet</p>
+                }
+                <p class="status-text"><strong>Status:</strong> @table.Status</p>
+            </div>
+        }
+    </div>
+
+    <a class="btn-back" asp-controller="Home" asp-action="Index">Go Back</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+    .withUrl("https://localhost:7176/reservationHub") // ADMIN’S SignalR endpoint
+    .build();
+
+    connection.on("CafeStatusUpdated", function (isClosed) {
+        console.log("CafeStatusUpdated received:", isClosed);
+        const overlay = document.getElementById("closedOverlay");
+        if (overlay) {
+            overlay.style.display = isClosed ? "flex" : "none";
+        }
+    });
+
+    connection.on("TableStatusUpdated", function () {
+        console.log("Table status updated — refreshing table list...");
+        refreshTableList(); // function to update table statuses via fetch
+    });
+
+    connection.start().then(() => {
+        console.log("SignalR connection established.");
+
+        // On page load, fetch cafe status once to ensure sync even before SignalR connects
+        fetch("https://localhost:7176/api/cafe-status")
+            .then(res => res.json())
+            .then(data => {
+                const overlay = document.getElementById("closedOverlay");
+                if (overlay) {
+                    overlay.style.display = data.isClosed ? "flex" : "none";
+                }
+            });
+
+    }).catch(err => {
+        console.error("SignalR connection error:", err.toString());
+    });
+
+    function refreshTableList() {
+        fetch("/Table/GetAll")
+            .then(res => res.json())
+            .then(tables => {
+                tables.forEach(table => {
+                    const card = document.querySelector(`.table-card[data-id='${table.tableId}']`);
+
+                     if (card) {
+                        const statusText = card.querySelector(".status-text");
+                        if (statusText) {
+                            statusText.textContent = "Status: " + table.status;
+                        }
+                        
+                        const guestCount = parseInt(card.getAttribute("data-guestcount"));
+
+                        if (table.status !== "Available") {
+                            card.classList.add("unavailable");
+                            card.classList.remove("available");
+                            card.onclick = null;
+                        } else {
+                            card.classList.remove("unavailable");
+                            card.classList.add("available");
+                            card.onclick = () => {
+                                location.href = `/Reservation/ReservationForm?tableId=${table.tableId}&guestCount=${guestCount}`;
+                            };
+                        }
+                    }
+                });
+            });
+    }
+
+</script>

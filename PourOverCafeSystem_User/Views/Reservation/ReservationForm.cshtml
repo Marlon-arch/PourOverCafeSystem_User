@@ -1,0 +1,345 @@
+﻿@{
+    var table = ViewBag.Table as PourOverCafeSystem_User.Database.CafeTable;
+    var guestCount = ViewBag.GuestCount as int?;
+    ViewData["Title"] = "Reservation Form";
+    Layout = null;
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    :root {
+        --accent: #c2b280;
+        --dark: #000;
+        --gray: #f5f5f5;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        background: url('/images/Select Table Page/POC BG.PNG') no-repeat center center fixed;
+        background-size: cover;
+        color: #111;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 60px auto;
+        background: white;
+        padding: 40px 30px;
+        border-radius: 14px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    p {
+        text-align: center;
+        color: #555;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: 600;
+        display: block;
+        margin-top: 18px;
+        margin-bottom: 6px;
+        color: #222;
+    }
+
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: #fefefe;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .checkbox {
+        margin-top: 25px;
+    }
+
+        .checkbox label {
+            font-weight: 500;
+            display: inline;
+            margin-left: 8px;
+        }
+
+    .menu-section {
+        display: none;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        animation: fadeIn 0.4s ease;
+    }
+
+    .menu-album {
+        margin-top: 10px;
+    }
+
+    .menu-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+        .menu-grid img {
+            width: 90px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+            .menu-grid img:hover {
+                transform: scale(1.04);
+            }
+
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .btn-dark, .btn-khaki {
+        flex: 1;
+        padding: 14px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-dark {
+        background-color: black;
+        color: white;
+    }
+
+        .btn-dark:hover {
+            background-color: #222;
+        }
+
+    .btn-khaki {
+        background-color: var(--accent);
+        color: white;
+    }
+
+        .btn-khaki:hover {
+            background-color: #a18e5c;
+        }
+
+    .warning-msg {
+        display: none;
+        background-color: #fbeaea;
+        color: #c0392b;
+        font-weight: 500;
+        padding: 14px;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        border: 1px solid #e0b4b4;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes fadeInScale {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+
+    @@keyframes fadeOutScale {
+        from
+
+    {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    }
+
+    .fade-in {
+        display: block !important;
+        animation: fadeInScale 0.3s ease forwards;
+    }
+
+    .fade-out {
+        animation: fadeOutScale 0.25s ease forwards;
+    }
+
+
+    @@media (max-width: 600px) {
+        .btn-group
+
+    {
+        flex-direction: column;
+    }
+
+    .menu-grid img {
+        width: 80px;
+    }
+
+    }
+</style>
+
+
+<div class="form-container">
+    <h2 style="font-weight: 700; font-size: 1.8rem;">Reservation for Table @table?.TableName</h2>
+    <p style="font-size: 1rem; color: #444;">Capacity: @table?.Capacity | Power Outlet: @(table?.HasPowerOutlet == true ? "Yes" : "No")</p>
+
+    <form asp-action="ReservationForm" method="post" onsubmit="return validateForm();">
+        <input type="hidden" name="tableId" value="@table?.TableId" />
+        <input type="hidden" name="guestCount" value="@guestCount" />
+
+        <label for="guestName">Your Name</label>
+        <input type="text" name="guestName" id="guestName" placeholder="Your Full Name" value="@ViewBag.GuestName" title="Letters and spaces only" />
+
+        <label for="contactNumber">Contact Number (e.g., 0988-888-8888)</label>
+        <input type="text" name="contactNumber" id="contactNumber" placeholder="0988-888-8888" value="@ViewBag.ContactNumber" maxlength="13" />
+
+        <div class="checkbox">
+            <input type="checkbox" id="orderCheck" onchange="toggleMenu()" />
+            <label for="orderCheck" style="display: inline;">Order in advance?</label>
+        </div>
+
+        <div class="menu-section" id="menuSection">
+            <div class="menu-album">
+                <div class="menu-grid">
+                    <a href="~/images/Menu/MENU1.png" data-lightbox="menu"><img src="~/images/Menu/MENU1.png" alt="Menu 1" /></a>
+                    <a href="~/images/Menu/MENU2.png" data-lightbox="menu"><img src="~/images/Menu/MENU2.png" alt="Menu 2" /></a>
+                    <a href="~/images/Menu/MENU3.png" data-lightbox="menu"><img src="~/images/Menu/MENU3.png" alt="Menu 3" /></a>
+                    <a href="~/images/Menu/MENU4.png" data-lightbox="menu"><img src="~/images/Menu/MENU4.png" alt="Menu 4" /></a>
+                    <a href="~/images/Menu/MENU5.png" data-lightbox="menu"><img src="~/images/Menu/MENU5.png" alt="Menu 5" /></a>
+                    <a href="~/images/Menu/MENU6.png" data-lightbox="menu"><img src="~/images/Menu/MENU6.png" alt="Menu 6" /></a>
+                </div>
+                <label for="orderText" style="margin-top: 15px;">Enter your order:</label>
+                <textarea name="orderText" rows="4" placeholder="Type your order here...">@ViewBag.OrderText</textarea>
+            </div>
+        </div>
+
+        <div id="formWarning" class="warning-msg">
+            Please fill in both name and contact number before proceeding.
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn-khaki">Proceed with Payment</button>
+            <a asp-action="SelectTable" asp-route-numberOfGuests="@guestCount" class="btn-dark" style="text-decoration: none; text-align: center;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function validateForm() {
+        const name = document.getElementById("guestName").value.trim();
+        const contact = document.getElementById("contactNumber").value.trim();
+        const warning = document.getElementById("formWarning");
+
+        const isAdvance = document.getElementById("orderCheck").checked;
+        const orderText = document.querySelector("textarea[name='orderText']").value.trim();
+
+        if (name === "") {
+            warning.innerText = "Please enter your name.";
+            warning.style.display = "block";
+            return false;
+        }
+
+        if (!isLettersOnly(name)) {
+            warning.innerText = "Name must only contain letters and spaces.";
+            warning.style.display = "block";
+            return false;
+        }
+
+        if (contact === "") {
+            warning.innerText = "Please enter your contact number.";
+            warning.style.display = "block";
+            return false;
+        }
+
+        if (
+            contact.length !== 13 ||
+            contact[4] !== '-' ||
+            contact[8] !== '-' ||
+            !isNumeric(contact.replaceAll("-", ""))
+        ) {
+            warning.innerText = "Contact number must follow the format: XXXX-XXX-XXXX.";
+            warning.style.display = "block";
+            return false;
+        }
+
+        if (isAdvance && orderText === "") {
+            warning.innerText = "Please enter your order details for advance ordering.";
+            warning.style.display = "block";
+            return false;
+        }
+
+        warning.style.display = "none";
+        return true;
+    }
+
+    function isNumeric(str) {
+        return /^\d+$/.test(str);
+    }
+
+    function isLettersOnly(str) {
+        return /^[A-Za-z .]+$/.test(str);
+    }
+
+    function toggleMenu() {
+        const menu = document.getElementById("menuSection");
+        if (document.getElementById("orderCheck").checked) {
+            menu.classList.remove("fade-out");
+            menu.classList.add("fade-in");
+        } else {
+            menu.classList.remove("fade-in");
+            menu.classList.add("fade-out");
+            setTimeout(() => {
+                menu.style.display = "none";
+                menu.classList.remove("fade-out");
+            }, 250);
+        }
+    }
+
+</script>
