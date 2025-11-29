@@ -50,12 +50,9 @@
     }
 
     @@keyframes spin {
-        to
-
-    {
-        transform: rotate(360deg);
-    }
-
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     .check-icon,
@@ -149,13 +146,10 @@
     }
 
     @@keyframes popIn {
-        to
-
-    {
-        opacity: 1;
-        transform: scale(1);
-    }
-
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     .timer-display {
@@ -168,16 +162,13 @@
     }
 
     @@keyframes pulse {
-        0%, 100%
+        0%, 100% {
+            transform: scale(1);
+        }
 
-    {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.08);
-    }
-
+        50% {
+            transform: scale(1.08);
+        }
     }
 </style>
 
@@ -233,8 +224,10 @@
 </div>
 
 <script>
+
     let timerStarted = false;
     let countdownInterval;
+    let hasEnded = false;
 
     function startTimer(endTime) {
         document.getElementById("loader").style.display = "none";
@@ -245,7 +238,7 @@
             const now = new Date();
             const distance = endTime - now;
 
-                if (distance <= 0) {
+                if (distance <= 0 && !hasEnded) {
                     clearInterval(countdownInterval);
                     hasEnded = true;
 

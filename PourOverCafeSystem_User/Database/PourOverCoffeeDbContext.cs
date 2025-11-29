@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using PourOverCafeSystem_Admin.Database;
 
 namespace PourOverCafeSystem_User.Database;
 
@@ -25,8 +24,6 @@ public partial class PourOverCoffeeDbContext : DbContext
     public virtual DbSet<Timer> Timers { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
-    public virtual DbSet<CafeStatus> CafeStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,7 +56,7 @@ public partial class PourOverCoffeeDbContext : DbContext
             entity.HasOne(d => d.Reservation).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.ReservationId)
                 .HasConstraintName("FK__Payments__Reserv__412EB0B6");
-            
+
             entity.Property(e => e.Remarks).HasMaxLength(255)
                 .IsUnicode(true);
         });
@@ -107,12 +104,6 @@ public partial class PourOverCoffeeDbContext : DbContext
             entity.Property(e => e.Password).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(10);
             entity.Property(e => e.Username).HasMaxLength(50);
-        });
-
-        modelBuilder.Entity<CafeStatus>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.IsClosed).HasDefaultValue(false);
         });
 
         OnModelCreatingPartial(modelBuilder);

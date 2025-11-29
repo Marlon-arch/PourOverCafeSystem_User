@@ -164,33 +164,27 @@
     }
 
     @@keyframes fadeInScale {
-        from
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
 
-    {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     @@keyframes fadeOutScale {
-        from
+        from {
+            opacity: 1;
+            transform: scale(1);
+        }
 
-    {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    to {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
+        to {
+            opacity: 0;
+            transform: scale(0.95);
+        }
     }
 
     .modal-overlay.show {
@@ -229,7 +223,7 @@
         <h3>Location & Contact</h3>
         <p style="font-size: 1.1rem; text-align: center;">
             📍 McArthur Highway, Angeles City, Pampanga (In front of AUF EA Building)<br />
-            ☎️ Contact Number: 0000-000-0000<br />
+            ☎️ Contact Number: 0923-595-6508<br />
             ⏰ Cafe Hours: 10:00 AM – 12:00 AM daily
         </p>
         <div style="margin-top: 20px;">

@@ -23,13 +23,8 @@ namespace PourOverCafeSystem_User.Controllers
             }
 
             var tables = await _context.CafeTables.ToListAsync();
-            var isClosed = await _context.CafeStatuses
-                .Where(cs => cs.Id == 1)
-                .Select(cs => cs.IsClosed)
-                .FirstOrDefaultAsync();
 
             ViewBag.NumberOfGuests = numberOfGuests;
-            ViewBag.CafeClosed = isClosed;
 
             return View(tables);
         }
@@ -72,7 +67,7 @@ namespace PourOverCafeSystem_User.Controllers
                 NumberOfGuests = guestCount,
                 OrderText = orderText,
                 ReservationStatus = "Pending",
-                ReservationDateTime = DateTime.Now
+                ReservationDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila"))
             };
 
             TempData["GuestName"] = guestName;

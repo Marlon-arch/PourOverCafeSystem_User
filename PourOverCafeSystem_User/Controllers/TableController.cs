@@ -20,7 +20,10 @@ namespace PourOverCafeSystem_User.Controllers
             var tables = await _context.CafeTables
                 .Select(t => new {
                     tableId = t.TableId,
-                    status = t.Status
+                    status = t.Status,
+                    capacity = t.Capacity,
+                    tableName = t.TableName,
+                    hasPowerOutlet = t.HasPowerOutlet
                 }).ToListAsync();
 
             return Json(tables);

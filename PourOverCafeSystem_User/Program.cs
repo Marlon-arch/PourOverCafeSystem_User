@@ -15,6 +15,8 @@ namespace PourOverCafeSystem_User
 
             builder.Services.AddSignalR();
 
+            builder.Services.AddSingleton<CloudinaryService>();
+
             builder.Services.AddDbContext<PourOverCoffeeDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("PourOverCoffeeDB"));

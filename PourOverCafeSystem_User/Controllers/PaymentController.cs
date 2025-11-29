@@ -31,26 +31,28 @@ public class PaymentController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadProof(Payment payment, IFormFile ScreenshotPath)
+    public async Task<IActionResult> UploadProof(Payment payment, IFormFile screenshot, [FromServices] CloudinaryService cloudinary)
     {
-        if (ScreenshotPath != null && ScreenshotPath.Length > 0)
+        try
         {
-            var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/uploads");
-            if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
-
-            var fileName = $"Reservation_{payment.ReservationId}_{DateTime.Now:yyyyMMddHHmmss}{Path.GetExtension(ScreenshotPath.FileName)}";
-            var filePath = Path.Combine(uploads, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (screenshot != null && screenshot.Length > 0)
             {
-                await ScreenshotPath.CopyToAsync(stream);
+                Console.WriteLine("Screenshot received: " + screenshot.FileName);
+                var imageUrl = await cloudinary.UploadImageAsync(screenshot);
+                Console.WriteLine("Uploaded URL: " + imageUrl);
+                payment.ScreenshotPath = imageUrl;
+            }
+            else
+            {
+                Console.WriteLine("Screenshot is null or empty.");
+                TempData["Error"] = "Please upload a valid image file.";
+                return RedirectToAction("UploadProof", new { reservationId = payment.ReservationId });
             }
 
-            payment.ScreenshotPath = "/images/uploads/" + fileName;
             payment.PaymentStatus = "Pending";
-
             _context.Payments.Add(payment);
 
+            // Update table status to Reserved
             var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.ReservationId == payment.ReservationId);
             if (reservation != null && reservation.TableId.HasValue)
             {
@@ -64,19 +66,29 @@ public class PaymentController : Controller
             await _context.SaveChangesAsync();
 
             // Call Admin API to broadcast SignalR message
-            using (var http = new HttpClient())
+            try
             {
-                http.BaseAddress = new Uri("https://localhost:7176"); // Admin project URL
-                await http.PostAsync("/api/broadcast-refresh", null);
+                using (var http = new HttpClient())
+                {
+                    http.BaseAddress = new Uri("http://mjbondoc-001-site2.anytempurl.com/"); // Admin project URL
+                    await http.PostAsync("/api/broadcast-refresh", null);
+                }
+            }
+            catch (Exception signalEx)
+            {
+                Console.WriteLine("SignalR broadcast failed: " + signalEx.Message);
             }
 
             return RedirectToAction("Countdown", "Timer", new { reservationId = payment.ReservationId });
         }
-
-        TempData["Error"] = "Please upload a valid image file.";
-        return View(payment);
+        catch (Exception ex)
+        {
+            Console.WriteLine("UPLOAD ERROR: " + ex.Message);
+            TempData["Error"] = "Upload failed. Try again.";
+            return RedirectToAction("UploadProof", new { reservationId = payment.ReservationId });
+        }
     }
-    
+
     [HttpPost]
     public IActionResult StoreTempData([FromBody] GcashTempData data)
     {

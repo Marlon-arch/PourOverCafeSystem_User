@@ -46,7 +46,7 @@ namespace PourOverCafeSystem_User.Controllers
                 expired = reservation?.ReservationStatus == "Expired",
                 arrived = timer?.Arrived == true,
                 approved = reservation?.ReservationStatus == "Approved",
-                endTime = timer?.EndTime
+                endTime = timer?.EndTime?.ToUniversalTime()
             });
         }
 

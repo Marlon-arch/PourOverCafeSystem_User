@@ -22,7 +22,7 @@
         z-index: 9999;
         text-align: center;
         padding: 40px;
-        ">
+                ">
         <h1 style="font-size: 2rem; font-weight: bold;">Pour Over Coffee is currently closed</h1>
         <p style="font-size: 1.2rem;">Monitoring & reservations are temporarily unavailable. Please check back later.</p>
     </div>
@@ -152,21 +152,18 @@
         }
 
     @@media (max-width: 768px) {
-        .table-card
+        .table-card {
+            width: 100%;
+            max-width: 300px;
+        }
 
-    {
-        width: 100%;
-        max-width: 300px;
-    }
+        .floorplan {
+            max-height: 260px;
+        }
 
-    .floorplan {
-        max-height: 260px;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
+        h1 {
+            font-size: 2rem;
+        }
     }
 </style>
 
@@ -203,7 +200,7 @@
             <div class="@finalClass"
                  onclick="@clickAction"
                  data-id="@table.TableId"
-                 data-guestcount="@guestCount">
+                 data-guestcount="@table.Capacity">
                 <h3>@table.TableName</h3>
                 <p>Seats: @table.Capacity</p>
                 @if (table.HasPowerOutlet == true)
@@ -224,9 +221,11 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
+    const baseUrl = window.location.origin;
+
     const connection = new signalR.HubConnectionBuilder()
-    .withUrl("https://localhost:7176/reservationHub") // ADMIN’S SignalR endpoint
-    .build();
+        .withUrl(`${baseUrl}/reservationHub`)
+        .build();
 
     connection.on("CafeStatusUpdated", function (isClosed) {
         console.log("CafeStatusUpdated received:", isClosed);
@@ -236,16 +235,11 @@
         }
     });
 
-    connection.on("TableStatusUpdated", function () {
-        console.log("Table status updated — refreshing table list...");
-        refreshTableList(); // function to update table statuses via fetch
-    });
-
     connection.start().then(() => {
         console.log("SignalR connection established.");
 
         // On page load, fetch cafe status once to ensure sync even before SignalR connects
-        fetch("https://localhost:7176/api/cafe-status")
+        fetch("https://mjbondoc-001-site2.anytempurl.com/api/cafe-status")
             .then(res => res.json())
             .then(data => {
                 const overlay = document.getElementById("closedOverlay");
@@ -264,15 +258,13 @@
             .then(tables => {
                 tables.forEach(table => {
                     const card = document.querySelector(`.table-card[data-id='${table.tableId}']`);
-
-                     if (card) {
+                    if (card) {
                         const statusText = card.querySelector(".status-text");
                         if (statusText) {
                             statusText.textContent = "Status: " + table.status;
                         }
-                        
-                        const guestCount = parseInt(card.getAttribute("data-guestcount"));
 
+                        card.setAttribute("data-guestcount", table.capacity);
                         if (table.status !== "Available") {
                             card.classList.add("unavailable");
                             card.classList.remove("available");
@@ -286,7 +278,8 @@
                         }
                     }
                 });
-            });
+            })
+            .catch(err => console.error("Failed to refresh table list:", err));
     }
-
 </script>
+
